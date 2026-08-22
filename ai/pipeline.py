@@ -23,9 +23,10 @@ async def run_pipeline(
     user_request: str,
     auto_mode: bool,
     progress,
+    marketplace: str = "universal",
 ):
 
-    # 20% → анализ товара
+    # 20% — анализируем товар
 
     analysis = await asyncio.to_thread(
         analyze_product,
@@ -39,24 +40,26 @@ async def run_pipeline(
         "Придумываю концепцию",
     )
 
-    # Если включён AI Director,
-    # Gemini сам придумывает направление.
-
+    # AI Director
     if auto_mode:
 
         user_request = (
-            "Сам придумай лучший профессиональный "
-            "дизайн карточки товара для маркетплейса. "
-            "Выбери подходящий фон, композицию, "
-            "заголовок, преимущества, типографику "
-            "и минимальные визуальные элементы."
+            "Самостоятельно разработай "
+            "профессиональную концепцию карточки "
+            "товара для выбранного маркетплейса. "
+            "Проанализируй товар и выбери лучший "
+            "фон, композицию, заголовок, "
+            "преимущества, типографику и "
+            "минимальные декоративные элементы. "
+            "Не изменяй реальный внешний вид товара."
         )
 
-    # 60% → локальные Skills
+    # 60% — выбираем локальные Skills
 
     skills = await asyncio.to_thread(
         get_skill_context,
         user_request,
+        marketplace,
     )
 
     await progress.update(
@@ -78,13 +81,18 @@ async def run_pipeline(
         "Генерирую изображение",
     )
 
-    # Генерация изображения
+    # Gemini генерирует изображение
 
     image_bytes = await asyncio.to_thread(
         generate_image,
         photo_bytes,
         mime_type,
         final_prompt,
+    )
+
+    await progress.update(
+        100,
+        "Готово",
     )
 
     headline = analysis.get(
@@ -95,4 +103,4 @@ async def run_pipeline(
     return GenerationResult(
         image_bytes=image_bytes,
         caption=headline,
-  )
+    )
