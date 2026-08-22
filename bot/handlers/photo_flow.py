@@ -11,9 +11,11 @@ from bot.state_store import (
     get_pending_photo,
     clear_user,
 )
+from bot.user_settings import get_marketplace
 from bot.progress import Progress
 from bot.keyboards.main_menu import main_menu
 from ai.pipeline import run_pipeline
+
 
 router = Router()
 
@@ -26,49 +28,84 @@ async def process_photo(
     mime_type: str,
     user_request: str,
 ):
+
+    user_id = message.from_user.id
+
     progress = Progress(message)
 
     try:
-        await progress.update(20, "Анализирую товар")
+
+        # Получаем настройки пользователя
+
+        mode = get_mode(user_id)
+
+        marketplace = get_marketplace(user_id)
+
+        auto_mode = mode == "auto"
+
+        # 20%
+
+        await progress.update(
+            20,
+            "Анализирую товар",
+        )
+
+        # Запускаем генерацию
 
         result = await run_pipeline(
             photo_bytes=photo_bytes,
             mime_type=mime_type,
             user_request=user_request,
-            auto_mode=(get_mode(message.from_user.id) == "auto"),
+            auto_mode=auto_mode,
             progress=progress,
+            marketplace=marketplace,
         )
 
-        await progress.update(100, "Готово")
+        # 100%
+
+        await progress.update(
+            100,
+            "Готово",
+        )
 
         await asyncio.sleep(0.5)
+
         await progress.delete()
+
+        # Отправляем изображение
 
         await message.answer_photo(
             photo=result.image_bytes,
             caption=(
                 "✅ <b>Карточка готова!</b>\n\n"
-                + result.caption
+                f"{result.caption}"
             ),
             reply_markup=main_menu(),
         )
 
-        clear_user(message.from_user.id)
+        clear_user(user_id)
 
     except Exception as error:
-        logging.exception("Generation error")
+
+        logging.exception(
+            "Generation error"
+        )
 
         await progress.delete()
 
         await message.answer(
-            "❌ <b>Не удалось создать карточку.</b>\n\n"
+            "❌ <b>Ошибка при создании карточки.</b>\n\n"
             f"<code>{type(error).__name__}: "
-            f"{str(error)[:500]}</code>"
+            f"{str(error)[:800]}</code>"
         )
 
 
 @router.message(F.photo)
-async def receive_photo(message: Message):
+async def receive_photo(
+    message: Message,
+):
+
+    user_id = message.from_user.id
 
     photo = message.photo[-1]
 
@@ -88,12 +125,18 @@ async def receive_photo(message: Message):
     mime_type = "image/jpeg"
 
     if telegram_file.file_path:
-        if telegram_file.file_path.lower().endswith(".png"):
+
+        file_path = telegram_file.file_path.lower()
+
+        if file_path.endswith(".png"):
             mime_type = "image/png"
-        elif telegram_file.file_path.lower().endswith(".webp"):
+
+        elif file_path.endswith(".webp"):
             mime_type = "image/webp"
 
-    # Если пользователь сразу написал текст
+    # Если пользователь отправил
+    # фото сразу с текстом
+
     if message.caption:
 
         await process_photo(
@@ -105,37 +148,19 @@ async def receive_photo(message: Message):
 
         return
 
-    # Если текст будет отправлен следующим сообщением
+    # Иначе сохраняем фото
+    # и ждём текст
+
     set_pending_photo(
-        message.from_user.id,
+        user_id,
         photo_bytes,
         mime_type,
     )
 
     await message.answer(
         "📸 <b>Фото получил.</b>\n\n"
-        "Теперь отправь сообщение с описанием дизайна.\n\n"
-        "Например:\n"
-        "<i>Сделай современную светлую кухню, "
-        "добавь заголовок «НОВАЯ КАРТОЧКА» "
-        "и 3 преимущества товара.</i>"
-    )
-
-
-@router.message(F.text)
-async def receive_text(message: Message):
-
-    pending = get_pending_photo(
-        message.from_user.id
-    )
-
-    if not pending:
-        return
-
-    await process_photo(
-        message=message,
-        photo_bytes=pending["photo_bytes"],
-        mime_type=pending["mime_type"],
-        user_request=message.text,
-      )
-  
+        "Теперь отправь описание дизайна.\n\n"
+        "<b>Например:</b>\n"
+        "«Сделай современный светлый фон, "
+        "добавь заголовок НОВИНКА и "
+        "3 преимущества товара»"
