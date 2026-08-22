@@ -1,16 +1,35 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
 
 def main_menu():
+
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text="✍️ Я задаю дизайн"),
-                KeyboardButton(text="🤖 ИИ придумывает дизайн"),
+                KeyboardButton(
+                    text="🟣 Wildberries"
+                ),
+                KeyboardButton(
+                    text="🔵 Ozon"
+                ),
             ],
             [
-                KeyboardButton(text="⚙️ Настройки"),
+                KeyboardButton(
+                    text="🟠 Avito"
+                ),
+                KeyboardButton(
+                    text="🟡 Яндекс Маркет"
+                ),
+            ],
+            [
+                KeyboardButton(
+                    text="⚙️ Настройки"
+                ),
             ],
         ],
         resize_keyboard=True,
+        is_persistent=True,
     )
