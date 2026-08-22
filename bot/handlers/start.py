@@ -9,9 +9,11 @@ router = Router()
 
 @router.message(CommandStart())
 async def start(message: Message):
+
     await message.answer(
         "🎨 <b>Marketplace Card AI</b>\n\n"
-        "Создавай карточки товаров для WB, Ozon, Avito и Яндекс Маркета.\n\n"
-        "Выбери режим:",
+        "Я помогу создать профессиональную "
+        "карточку товара для маркетплейса.\n\n"
+        "Сначала выбери площадку:",
         reply_markup=main_menu(),
     )
