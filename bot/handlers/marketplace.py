@@ -1,78 +1,69 @@
-from aiogram import Router
-from aiogram.types import CallbackQuery
+from aiogram import Router, F
+from aiogram.types import Message
 
 from bot.user_settings import set_marketplace
 
 router = Router()
 
 
-@router.callback_query(lambda c: c.data == "market_wb")
-async def wb(callback: CallbackQuery):
+@router.message(F.text == "🟣 Wildberries")
+async def wildberries(message: Message):
 
     set_marketplace(
-        callback.from_user.id,
+        message.from_user.id,
         "wildberries"
     )
 
-    await callback.answer(
-        "Wildberries выбран"
+    await message.answer(
+        "🟣 <b>Wildberries</b>\n\n"
+        "Теперь выбери режим:\n\n"
+        "✍️ Ты задаёшь дизайн — "
+        "сам пишешь фон, текст и пожелания.\n\n"
+        "🤖 ИИ придумывает — "
+        "я сам разработаю концепцию."
     )
 
-    await callback.message.answer(
-        "🟣 <b>Wildberries выбран</b>\n\n"
-        "Теперь отправь фотографию товара."
-    )
 
-
-@router.callback_query(lambda c: c.data == "market_ozon")
-async def ozon(callback: CallbackQuery):
+@router.message(F.text == "🔵 Ozon")
+async def ozon(message: Message):
 
     set_marketplace(
-        callback.from_user.id,
+        message.from_user.id,
         "ozon"
     )
 
-    await callback.answer(
-        "Ozon выбран"
-    )
-
-    await callback.message.answer(
+    await message.answer(
         "🔵 <b>Ozon выбран</b>\n\n"
-        "Теперь отправь фотографию товара."
+        "Теперь отправь фото товара "
+        "и выбери режим дизайна."
     )
 
 
-@router.callback_query(lambda c: c.data == "market_avito")
-async def avito(callback: CallbackQuery):
+@router.message(F.text == "🟠 Avito")
+async def avito(message: Message):
 
     set_marketplace(
-        callback.from_user.id,
+        message.from_user.id,
         "avito"
     )
 
-    await callback.answer(
-        "Avito выбран"
-    )
-
-    await callback.message.answer(
+    await message.answer(
         "🟠 <b>Avito выбран</b>\n\n"
-        "Теперь отправь фотографию товара."
+        "Теперь отправь фото товара "
+        "и выбери режим дизайна."
     )
 
 
-@router.callback_query(lambda c: c.data == "market_yandex")
-async def yandex(callback: CallbackQuery):
+@router.message(F.text == "🟡 Яндекс Маркет")
+async def yandex(message: Message):
 
     set_marketplace(
-        callback.from_user.id,
+        message.from_user.id,
         "yandex_market"
     )
 
-    await callback.answer(
-        "Яндекс Маркет выбран"
-    )
-
-    await callback.message.answer(
+    await message.answer(
         "🟡 <b>Яндекс Маркет выбран</b>\n\n"
-        "Теперь отправь фотографию товара."
-    )
+        "Теперь отправь фото товара "
+        "и выбери режим дизайна."
+)
