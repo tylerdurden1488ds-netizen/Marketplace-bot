@@ -2,68 +2,64 @@ from aiogram import Router, F
 from aiogram.types import Message
 
 from bot.user_settings import set_marketplace
+from bot.keyboards.mode import mode_keyboard
 
 router = Router()
+
+
+async def marketplace_selected(
+    message: Message,
+    marketplace: str,
+    title: str,
+):
+
+    set_marketplace(
+        message.from_user.id,
+        marketplace,
+    )
+
+    await message.answer(
+        f"{title}\n\n"
+        "Теперь выбери режим создания карточки:",
+        reply_markup=mode_keyboard(),
+    )
 
 
 @router.message(F.text == "🟣 Wildberries")
 async def wildberries(message: Message):
 
-    set_marketplace(
-        message.from_user.id,
-        "wildberries"
-    )
-
-    await message.answer(
-        "🟣 <b>Wildberries</b>\n\n"
-        "Теперь выбери режим:\n\n"
-        "✍️ Ты задаёшь дизайн — "
-        "сам пишешь фон, текст и пожелания.\n\n"
-        "🤖 ИИ придумывает — "
-        "я сам разработаю концепцию."
+    await marketplace_selected(
+        message,
+        "wildberries",
+        "🟣 <b>Wildberries выбран</b>",
     )
 
 
 @router.message(F.text == "🔵 Ozon")
 async def ozon(message: Message):
 
-    set_marketplace(
-        message.from_user.id,
-        "ozon"
-    )
-
-    await message.answer(
-        "🔵 <b>Ozon выбран</b>\n\n"
-        "Теперь отправь фото товара "
-        "и выбери режим дизайна."
+    await marketplace_selected(
+        message,
+        "ozon",
+        "🔵 <b>Ozon выбран</b>",
     )
 
 
 @router.message(F.text == "🟠 Avito")
 async def avito(message: Message):
 
-    set_marketplace(
-        message.from_user.id,
-        "avito"
-    )
-
-    await message.answer(
-        "🟠 <b>Avito выбран</b>\n\n"
-        "Теперь отправь фото товара "
-        "и выбери режим дизайна."
+    await marketplace_selected(
+        message,
+        "avito",
+        "🟠 <b>Avito выбран</b>",
     )
 
 
 @router.message(F.text == "🟡 Яндекс Маркет")
 async def yandex(message: Message):
 
-    set_marketplace(
-        message.from_user.id,
-        "yandex_market"
+    await marketplace_selected(
+        message,
+        "yandex_market",
+        "🟡 <b>Яндекс Маркет выбран</b>",
     )
-
-    await message.answer(
-        "🟡 <b>Яндекс Маркет выбран</b>\n\n"
-        "Теперь отправь фото товара "
-        "и выбери режим дизайна."
-)
